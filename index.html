@@ -220,7 +220,7 @@
                     </div>
                 </div>
 
-                <p class="text-[11px] text-slate-500 font-mono mt-4 tracking-wider">⚡ 瘋狂點擊酒精飲盡！</p>
+                <p class="text-[11px] text-slate-500 font-mono mt-4 tracking-wider">⚡ 瘋狂點擊，一乾而盡！</p>
             </div>
 
             <!-- 遊戲進行中底部按鈕 (終止挑戰 / 重新挑戰) -->
@@ -254,7 +254,7 @@
                 <li class="flex items-start gap-2.5"><span class="text-amber-400 font-bold">2.</span>困難模式：15秒內點擊螢幕200下即挑戰成功。</li>
                 <li class="flex items-start gap-2.5"><span class="text-amber-400 font-bold">3.</span>極限模式：挑戰15秒內最多點擊數。</li>
                 <li class="flex items-start gap-2.5"><span class="text-amber-400 font-bold">4.</span>排行榜僅會記錄極限模式分數。</li>
-                <li class="flex items-start gap-2.5"><span class="text-amber-400 font-bold">5.</span>僅供娛樂用。</li>
+                <li class="flex items-start gap-2.5"><span class="text-amber-400 font-bold">5.</span>小遊戲僅供娛樂用。</li>
             </ul>
             <button onclick="closeModal('modal-instructions')" class="mt-6 w-full py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-bold text-xs tracking-wider">
                 我知道了
@@ -267,7 +267,7 @@
         <div class="glass-card-purple w-full max-w-xs rounded-3xl p-6 text-center border-purple-500/40">
             <h3 class="font-game text-2xl text-purple-300 mb-2 purple-glow-text">極限挑戰</h3>
             <p class="text-xs text-slate-300 font-light mb-4 leading-relaxed">
-                輸入您的暱稱，製作人最高紀錄197，祝您挑戰成功
+                製作人最高紀錄192，祝您挑戰成功
             </p>
             
             <input type="text" id="nickname-input" maxlength="10" placeholder="神秘酒客" 
@@ -396,9 +396,9 @@
                 clicksDisplay.innerText = "150/150";
                 updateBeerLevel(150);
             } else if (gameMode === 'hard') {
-                targetClicks = 200;
-                remainingClicks = 200;
-                clicksDisplay.innerText = "200/200";
+                targetClicks = 180;
+                remainingClicks = 180;
+                clicksDisplay.innerText = "180/180";
                 updateBeerLevel(200);
             } else if (gameMode === 'extreme') {
                 extremeScore = 0;
@@ -545,7 +545,7 @@
                 }
             } else if (gameMode === 'hard') {
                 if (remainingClicks === 0 || earlySuccess) {
-                    resultMessage.innerText = "🏆 真正的酒豪！挑戰成功！";
+                    resultMessage.innerText = "🏆 酒精本人！挑戰成功！";
                     resultButtons.innerHTML = `
                         <button onclick="goCover()" class="w-full py-3.5 rounded-2xl bg-amber-500 text-slate-950 font-bold text-sm tracking-wider">
                             返回首頁
