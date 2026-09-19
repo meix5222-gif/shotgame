@@ -331,8 +331,8 @@
                 </button>
             </div>
             <div class="space-y-3 text-xs text-gray-200 leading-relaxed font-medium">
-                <p>1. 普通模式：15秒內點擊螢幕150下即挑戰成功。</p>
-                <p>2. 困難模式：15秒內點擊螢幕180下即挑戰成功。</p>
+                <p>1. 普通模式：15秒內點擊螢幕120下即挑戰成功。</p>
+                <p>2. 困難模式：15秒內點擊螢幕150下即挑戰成功。</p>
                 <p>3. 極限模式：挑戰15秒內最多點擊數。</p>
                 <p>4. 排行榜僅會記錄極限模式分數。</p>
                 <p>5. 小遊戲僅供娛樂用。</p>
@@ -351,7 +351,7 @@
             </div>
             <h3 class="text-lg font-bold text-white mb-2">準備進入極限賽</h3>
             <p class="text-xs text-gray-300 text-center mb-4 leading-relaxed">
-                製作人最高紀錄183，祝您挑戰成功
+                輸入您的暱稱，挑戰極限
             </p>
             
             <input type="text" id="player-nickname" placeholder="請輸入暱稱" maxlength="12" class="w-full px-4 py-3 bg-gray-900/90 border border-purple-500/50 rounded-xl text-white text-center focus:outline-none focus:border-pink-500 mb-6 font-bold tracking-wider text-sm">
@@ -439,8 +439,8 @@
                 return;
             }
 
-            if (mode === 'normal') targetClicks = 150;
-            if (mode === 'hard') targetClicks = 180;
+            if (mode === 'normal') targetClicks = 120;
+            if (mode === 'hard') targetClicks = 150;
 
             initGameUI();
             startReadyCountdown();
