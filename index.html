@@ -3,606 +3,660 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SHOT! - 微醺夜色測試版</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Black Han Sans (霓虹標題) & Noto Sans TC -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
-    
-    <style>
-        * {
-            -webkit-tap-highlight-color: transparent;
-            user-select: none;
-        }
+    <title>SHOT! - 夜晚微醺極限挑戰</title>
 
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Noto+Sans+TC:wght@400;700;900&family=Press+Start+2P&display=swap" rel="stylesheet">
+
+    <!-- Firebase SDK (v9 Modular Scripts) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // 您的專屬 Firebase 設定
+        const firebaseConfig = {
+            apiKey: "AIzaSyA5_QR7dEjIx6RTghTqcB5jgCs6c-4nHQY",
+            authDomain: "shottime-397a4.firebaseapp.com",
+            projectId: "shottime-397a4",
+            storageBucket: "shottime-397a4.firebasestorage.app",
+            messagingSenderId: "543397406837",
+            appId: "1:543397406837:web:79429dc37c8aad0014b03c",
+            measurementId: "G-1KCTHMZ8KN"
+        };
+
+        // 初始化 Firebase & Firestore
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // 將資料庫方法掛載到 window 全局對象，供傳統 JS 呼叫
+        window.saveScoreToCloud = async function(playerName, score) {
+            try {
+                await addDoc(collection(db, "leaderboard"), {
+                    name: playerName || "神秘酒客",
+                    score: Number(score),
+                    createdAt: serverTimestamp()
+                });
+                return true;
+            } catch (e) {
+                console.error("寫入 Firestore 失敗:", e);
+                return false;
+            }
+        };
+
+        window.fetchCloudLeaderboard = async function() {
+            try {
+                const q = query(collection(db, "leaderboard"), orderBy("score", "desc"), limit(10));
+                const querySnapshot = await getDocs(q);
+                const scores = [];
+                querySnapshot.forEach((doc) => {
+                    scores.push(doc.data());
+                });
+                return scores;
+            } catch (e) {
+                console.error("讀取 Firestore 失敗:", e);
+                return null;
+            }
+        };
+    </script>
+
+    <style>
         body {
             font-family: 'Noto Sans TC', sans-serif;
-            background-color: #05070c;
-            background-image: 
-                radial-gradient(circle at 50% 20%, rgba(245, 158, 11, 0.08) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(192, 132, 252, 0.06) 0%, transparent 40%);
-            color: #f1f5f9;
-            overflow-x: hidden;
+            background-color: #090514;
+            color: #f3f4f6;
             touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+            overflow: hidden;
         }
 
-        .font-game {
-            font-family: 'Black Han Sans', 'Noto Sans TC', sans-serif;
+        .title-font {
+            font-family: 'Cinzel', serif;
         }
 
-        /* 霓虹與微醺玻璃效果 Design Tokens */
+        .pixel-font {
+            font-family: 'Press Start 2P', cursive;
+        }
+
+        /* 霓虹燈光陰影特效 */
+        .neon-text-pink {
+            text-shadow: 0 0 5px #ff007f, 0 0 15px #ff007f, 0 0 30px #ff007f;
+        }
+        .neon-text-yellow {
+            text-shadow: 0 0 5px #ffd700, 0 0 15px #ffd700, 0 0 25px #ffd700;
+        }
+        .neon-border-pink {
+            box-shadow: 0 0 10px #ff007f, inset 0 0 10px #ff007f;
+        }
+        .neon-border-purple {
+            box-shadow: 0 0 15px #a855f7, inset 0 0 8px #a855f7;
+        }
+
+        /* 玻璃擬態樣式 */
         .glass-card {
-            background: rgba(15, 20, 32, 0.75);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(245, 158, 11, 0.2);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+            background: rgba(20, 15, 35, 0.65);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
         }
 
-        .glass-card-purple {
-            background: rgba(25, 15, 38, 0.85);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(192, 132, 252, 0.3);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.7);
+        /* 酒杯與啤酒動態造型 */
+        .beer-glass {
+            position: relative;
+            background: linear-gradient(to right, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.2) 100%);
+            border: 4px solid rgba(255, 255, 255, 0.4);
+            border-top: none;
+            border-radius: 0 0 25px 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8), inset 0 0 15px rgba(255,215,0,0.2);
+            overflow: hidden;
         }
 
-        .gold-glow-text {
-            text-shadow: 
-                0 0 10px rgba(245, 158, 11, 0.6),
-                0 0 25px rgba(245, 158, 11, 0.4),
-                0 0 50px rgba(217, 119, 6, 0.3);
+        .beer-liquid {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 100%;
+            background: linear-gradient(to top, #e67e22, #f1c40f, #f39c12);
+            transition: height 0.08s ease-out;
         }
 
-        .purple-glow-text {
-            text-shadow: 
-                0 0 10px rgba(192, 132, 252, 0.6),
-                0 0 25px rgba(168, 85, 247, 0.4);
+        .beer-foam {
+            position: absolute;
+            top: -12px;
+            left: 0;
+            right: 0;
+            height: 16px;
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(255,255,255,0.8);
         }
 
-        .beer-press-effect {
-            transition: transform 0.04s cubic-bezier(0.1, 0.9, 0.2, 1);
+        /* 氣泡上升動畫 */
+        .bubble {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            bottom: 0;
+            animation: bubbleUp 2s infinite ease-in;
         }
 
-        .beer-press-effect:active {
-            transform: scale(0.91) rotate(-1deg);
+        @keyframes bubbleUp {
+            0% { transform: translateY(0) scale(0.5); opacity: 0; }
+            50% { opacity: 0.8; }
+            100% { transform: translateY(-180px) scale(1.2); opacity: 0; }
         }
 
-        .liquid-fill {
-            transition: height 0.25s ease-out, y 0.25s ease-out;
+        /* 點擊飛出數字 */
+        .click-pop {
+            position: absolute;
+            color: #ffd700;
+            font-weight: 900;
+            font-size: 1.8rem;
+            pointer-events: none;
+            animation: popAndFade 0.6s forwards ease-out;
+            text-shadow: 0 0 10px #ff007f;
+            z-index: 50;
         }
+
+        @keyframes popAndFade {
+            0% { transform: translate(-50%, -50%) scale(0.6) rotate(0deg); opacity: 1; }
+            50% { transform: translate(-50%, -100%) scale(1.3) rotate(-10deg); opacity: 0.9; }
+            100% { transform: translate(-50%, -150%) scale(1) rotate(10deg); opacity: 0; }
+        }
+
+        /* 水波波紋動畫 */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 0, 127, 0.4);
+            transform: scale(0);
+            animation: rippleEffect 0.5s linear;
+            pointer-events: none;
+        }
+
+        @keyframes rippleEffect {
+            to { transform: scale(4); opacity: 0; }
+        }
+
+        /* 自訂滾動條 */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(15, 10, 25, 0.6); }
+        ::-webkit-scrollbar-thumb { background: #a855f7; border-radius: 3px; }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-0 md:p-4 selection:bg-amber-500 selection:text-black">
+<body class="h-screen w-screen flex flex-col justify-between items-center relative select-none">
 
-    <!-- 主遊戲手機框架容器 -->
-    <div class="w-full max-w-md min-h-screen md:min-h-[844px] md:max-h-[900px] bg-[#07090e] relative flex flex-col justify-between overflow-hidden md:rounded-[40px] md:border md:border-amber-500/20 md:shadow-[0_0_50px_rgba(245,158,11,0.15)]">
-
-        <!-- 背景霓虹光暈圈 -->
-        <div class="absolute -top-24 -left-24 w-60 h-60 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
-        <div class="absolute -bottom-24 -right-24 w-60 h-60 bg-purple-600/10 rounded-full blur-3xl pointer-events-none"></div>
-
-        <!-- 1. 封面視圖 (Cover View) -->
-        <div id="view-cover" class="relative z-10 flex-1 flex flex-col justify-between p-6">
-            
-            <!-- 上方導航列：左上遊戲說明、右上排行榜 -->
-            <div class="flex items-center justify-between w-full pt-2">
-                <button onclick="openModal('modal-instructions')" class="glass-card px-3.5 py-2 rounded-2xl flex items-center gap-1.5 active:scale-95 transition-transform border-amber-500/30">
-                    <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                    <span class="text-xs font-bold text-amber-200 tracking-wider">說明</span>
-                </button>
-
-                <button onclick="openModal('modal-leaderboard')" class="glass-card p-2.5 rounded-2xl border-amber-500/30 active:scale-95 transition-transform">
-                    <svg class="w-6 h-6 text-amber-400 drop-shadow-[0_0_8px_rgba(245,158,11,0.6)]" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0011 15.9V18H9v2h6v-2h-2v-2.1c1.95-.37 3.46-1.88 3.82-3.81C19.23 11.72 21 9.69 21 7V5c0-1.1-.9-2-2-2zM5 8V7h2v3.82C5.84 10.4 5 9.3 5 8zm14 0c0 1.3-.84 2.4-2 2.82V7h2v1z"/>
-                    </svg>
-                </button>
-            </div>
-
-            <!-- 主標題區 -->
-            <div class="text-center my-auto pt-2">
-                <h1 class="font-game text-7xl tracking-wider text-amber-400 gold-glow-text mb-1 italic">
-                    SHOT!
-                </h1>
-                <p class="text-xs font-mono text-amber-300/60 tracking-[0.3em] uppercase">
-                    - 測 試 版 -
-                </p>
-            </div>
-
-            <!-- 中央酒吧啤酒杯視覺 (預留 BEER_IMAGE_URL 替換自繪圖) -->
-            <div class="my-auto flex justify-center items-center py-2">
-                <div id="cover-beer-container" class="w-48 h-60 relative flex items-center justify-center">
-                    <div id="cover-beer-graphic" class="w-full h-full flex items-center justify-center">
-                        <!-- 高質感向量啤酒杯 -->
-                        <svg class="w-40 h-56 drop-shadow-[0_15px_30px_rgba(245,158,11,0.35)]" viewBox="0 0 100 130" fill="none">
-                            <path d="M25 25 H70 V110 C70 113 67 115 64 115 H31 C28 115 25 113 25 110 Z" stroke="#f59e0b" stroke-width="3.5" fill="#0d111a"/>
-                            <rect x="28" y="40" width="39" h="72" rx="2" fill="url(#beer-grad)" fill-opacity="0.95"/>
-                            <rect x="28" y="28" width="39" h="14" rx="2" fill="#fff" fill-opacity="0.9"/>
-                            <circle cx="35" cy="32" r="3" fill="#fff" opacity="0.8"/>
-                            <circle cx="50" cy="30" r="4" fill="#fff" opacity="0.9"/>
-                            <circle cx="62" cy="33" r="3" fill="#fff" opacity="0.8"/>
-                            <path d="M70 42 H83 C88 42 91 45 91 50 V88 C91 93 88 96 83 96 H70" stroke="#f59e0b" stroke-width="4" fill="none"/>
-                            <defs>
-                                <linearGradient id="beer-grad" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stop-color="#fbbf24"/>
-                                    <stop offset="100%" stop-color="#d97706"/>
-                                </linearGradient>
-                            </defs>
-                        </svg>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 下方模式選擇按鈕 -->
-            <div class="space-y-3.5 mb-4">
-                <button onclick="prepareGame('normal')" class="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-300 text-slate-950 font-game text-lg tracking-wider active:scale-95 transition-all shadow-[0_0_20px_rgba(245,158,11,0.3)]">
-                    普通模式 (150下)
-                </button>
-                <button onclick="prepareGame('hard')" class="w-full py-4 rounded-2xl bg-gradient-to-r from-orange-600 via-amber-500 to-orange-400 text-slate-950 font-game text-lg tracking-wider active:scale-95 transition-all shadow-[0_0_20px_rgba(234,88,12,0.3)]">
-                    困難模式 (200下)
-                </button>
-                <button onclick="openExtremeModal()" class="w-full py-4 rounded-2xl bg-gradient-to-r from-purple-600 via-fuchsia-500 to-pink-500 text-white font-game text-lg tracking-wider active:scale-95 transition-all shadow-[0_0_25px_rgba(192,132,252,0.4)]">
-                    極限模式 (挑戰極限)
-                </button>
-            </div>
-
-            <!-- 最下方製作人標示 -->
-            <div class="text-center pb-1">
-                <p class="text-[11px] text-slate-500 font-mono tracking-widest">
-                    - 製作人：麻糬 -
-                </p>
-            </div>
-        </div>
-
-        <!-- 2. 遊戲進行視圖 (Game View) -->
-        <div id="view-game" class="hidden relative z-10 flex-1 flex-col justify-between p-6">
-            
-            <div class="text-center pt-2">
-                <h2 class="font-game text-4xl tracking-wider text-amber-400 gold-glow-text italic">SHOT!</h2>
-            </div>
-
-            <!-- 中央遊戲主體區域 -->
-            <div class="my-auto flex flex-col items-center justify-center min-h-[440px] relative">
-                
-                <!-- Ready 倒數與 GO 全螢幕遮罩 -->
-                <div id="ready-overlay" class="absolute inset-0 z-30 flex flex-col items-center justify-center bg-[#07090e]/95 backdrop-blur-xl rounded-3xl">
-                    <p id="ready-text" class="font-game text-6xl text-amber-400 gold-glow-text animate-pulse italic">
-                        Ready?
-                    </p>
-                </div>
-
-                <!-- 15秒倒數計時器 -->
-                <div class="mb-1 text-center">
-                    <span id="timer-display" class="font-game text-7xl text-slate-100 tracking-tight drop-shadow-[0_0_15px_rgba(255,255,255,0.4)]">15</span>
-                    <span class="text-xs font-mono text-amber-400/80 ml-1 tracking-widest">SEC</span>
-                </div>
-
-                <!-- 點擊次數 / 計數器 -->
-                <div class="mb-4">
-                    <span id="clicks-display" class="font-mono text-2xl font-black text-amber-400 tracking-wider drop-shadow-[0_0_10px_rgba(245,158,11,0.5)]">150/150</span>
-                </div>
-
-                <!-- 可連擊啤酒杯 -->
-                <div id="beer-click-area" onclick="handleBeerClick()" class="beer-press-effect cursor-pointer relative w-52 h-64 flex items-center justify-center">
-                    
-                    <div id="game-beer-graphic" class="w-full h-full flex items-center justify-center relative">
-                        <svg class="w-44 h-60 drop-shadow-[0_15px_35px_rgba(245,158,11,0.4)]" viewBox="0 0 100 130" fill="none">
-                            <path d="M25 25 H70 V110 C70 113 67 115 64 115 H31 C28 115 25 113 25 110 Z" stroke="#f59e0b" stroke-width="3.5" fill="#0d111a"/>
-                            
-                            <!-- 動態酒吧啤酒液體水位 -->
-                            <g id="beer-liquid-group">
-                                <rect id="beer-liquid" class="liquid-fill" x="28" y="40" width="39" h="72" rx="2" fill="url(#beer-grad-game)" fill-opacity="0.95"/>
-                                <rect id="beer-foam" class="liquid-fill" x="28" y="28" width="39" h="14" rx="2" fill="#ffffff" fill-opacity="0.95"/>
-                            </g>
-
-                            <!-- 手把 -->
-                            <path d="M70 42 H83 C88 42 91 45 91 50 V88 C91 93 88 96 83 96 H70" stroke="#f59e0b" stroke-width="4" fill="none"/>
-                            
-                            <defs>
-                                <linearGradient id="beer-grad-game" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stop-color="#fbbf24"/>
-                                    <stop offset="100%" stop-color="#d97706"/>
-                                </linearGradient>
-                            </defs>
-                        </svg>
-                    </div>
-
-                </div>
-
-                <p class="text-[11px] text-slate-500 font-mono mt-4 tracking-wider">⚡ 瘋狂點擊酒精飲盡！</p>
-            </div>
-
-            <!-- 遊戲進行中底部按鈕 (終止挑戰 / 重新挑戰) -->
-            <div id="game-controls" class="flex justify-between items-center w-full pt-2">
-                <button onclick="terminateGame()" class="px-5 py-3 rounded-2xl glass-card text-xs text-slate-400 font-bold active:scale-95 transition-transform">
-                    終止挑戰
-                </button>
-                <button onclick="restartCurrentGame()" class="px-5 py-3 rounded-2xl glass-card text-xs text-amber-300 font-bold border-amber-500/40 active:scale-95 transition-transform">
-                    重新挑戰
-                </button>
-            </div>
-
-            <!-- 挑戰結果與結算按鈕區 -->
-            <div id="result-controls" class="hidden flex-col items-center gap-4 w-full pt-2 z-20">
-                <p id="result-message" class="font-game text-2xl text-amber-300 gold-glow-text text-center"></p>
-                
-                <div id="result-buttons" class="flex justify-between items-center w-full gap-3">
-                    <!-- 動態由 JS 渲染按鈕 -->
-                </div>
-            </div>
-
-        </div>
-
+    <!-- 背景夜店氛圍動態微光 -->
+    <div class="absolute inset-0 z-0 opacity-40 pointer-events-none">
+        <div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-pink-600 rounded-full filter blur-[120px]"></div>
+        <div class="absolute bottom-1/4 left-1/3 w-80 h-80 bg-purple-700 rounded-full filter blur-[100px]"></div>
+        <div class="absolute top-2/3 right-1/4 w-72 h-72 bg-amber-500 rounded-full filter blur-[110px]"></div>
     </div>
 
-    <!-- 彈窗 1：遊戲說明 Modal -->
-    <div id="modal-instructions" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-        <div class="glass-card w-full max-w-xs rounded-3xl p-6 text-left border-amber-500/40">
-            <h3 class="font-game text-2xl text-amber-400 mb-4 text-center gold-glow-text">遊戲說明</h3>
-            <ul class="text-xs text-slate-300 space-y-3.5 leading-relaxed font-light">
-                <li class="flex items-start gap-2.5"><span class="text-amber-400 font-bold">1.</span> 普通模式：15秒內點擊螢幕150下即挑戰成功。</li>
-                <li class="flex items-start gap-2.5"><span class="text-amber-400 font-bold">2.</span> 困難模式：15秒內點擊螢幕200下即挑戰成功。</li>
-                <li class="flex items-start gap-2.5"><span class="text-amber-400 font-bold">3.</span> 極限模式：挑戰15秒內最多點擊數。</li>
-                <li class="flex items-start gap-2.5"><span class="text-amber-400 font-bold">4.</span> 排行榜僅會記錄極限模式分數。</li>
-                <li class="flex items-start gap-2.5"><span class="text-amber-400 font-bold">5.</span> 僅供娛樂用。</li>
-            </ul>
-            <button onclick="closeModal('modal-instructions')" class="mt-6 w-full py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-bold text-xs tracking-wider">
-                我知道了
+    <!-- 頂部頁首與儀表板 -->
+    <header class="w-full max-w-md p-4 z-10 flex flex-col items-center">
+        <div class="flex items-center space-x-2">
+            <i class="fa-solid fa-wine-glass-empty text-pink-500 text-2xl animate-pulse"></i>
+            <h1 class="text-3xl title-font font-bold tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-400 to-amber-300 neon-text-pink">
+                SHOT!
+            </h1>
+        </div>
+        <p class="text-xs text-gray-400 tracking-wider mt-1 font-light">夜 晚 微 醺 連 點 挑 戰</p>
+
+        <!-- 模式切換鈕 -->
+        <div class="flex w-full mt-4 bg-gray-900/80 p-1 rounded-xl border border-purple-900/50 glass-card">
+            <button id="mode-casual-btn" onclick="switchMode('casual')" class="flex-1 py-2 text-xs font-bold rounded-lg transition-all duration-300 bg-gradient-to-r from-pink-600 to-purple-600 text-white shadow-lg">
+                <i class="fa-solid fa-beer-mug-empty mr-1"></i> 輕鬆喝模式
+            </button>
+            <button id="mode-extreme-btn" onclick="switchMode('extreme')" class="flex-1 py-2 text-xs font-bold text-gray-400 hover:text-white rounded-lg transition-all duration-300">
+                <i class="fa-solid fa-bolt mr-1"></i> 極限 15 秒賽
             </button>
         </div>
-    </div>
+    </header>
 
-    <!-- 彈窗 2：極限模式專屬暱稱輸入 Modal (替代原 prompt 防止被瀏覽器阻擋) -->
-    <div id="modal-extreme-input" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
-        <div class="glass-card-purple w-full max-w-xs rounded-3xl p-6 text-center border-purple-500/40">
-            <h3 class="font-game text-2xl text-purple-300 mb-2 purple-glow-text">極限挑戰</h3>
-            <p class="text-xs text-slate-300 font-light mb-4 leading-relaxed">
-                輸入您的暱稱<br><span class="text-amber-400 font-bold">製作人最高紀錄 197</span>，祝您挑戰成功！
+    <!-- 遊戲主要互動區域 -->
+    <main class="w-full max-w-md flex-1 flex flex-col justify-center items-center relative z-10 px-4">
+        
+        <!-- 計時器與分數資訊儀表 -->
+        <div class="w-full flex justify-between items-center mb-6 px-4 py-3 glass-card rounded-2xl border border-white/10">
+            <!-- 剩餘秒數 / 模式狀態 -->
+            <div class="flex flex-col">
+                <span class="text-xs text-gray-400">倒數計時</span>
+                <span id="timer-display" class="pixel-font text-2xl font-bold text-amber-400 neon-text-yellow mt-1">--</span>
+            </div>
+            
+            <!-- 挑戰次數 / 點擊數 -->
+            <div class="flex flex-col items-end">
+                <span id="score-label" class="text-xs text-gray-400">乾杯總數</span>
+                <span id="click-count" class="pixel-font text-3xl font-extrabold text-pink-500 neon-text-pink mt-1">0</span>
+            </div>
+        </div>
+
+        <!-- 酒杯主體 (互動點擊區域) -->
+        <div id="drink-area" class="relative cursor-pointer my-4 group" onclick="handleShotClick(event)">
+            
+            <!-- 倒數 Ready Overlay -->
+            <div id="ready-overlay" class="hidden absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/70 rounded-3xl backdrop-blur-sm">
+                <span id="ready-countdown" class="pixel-font text-6xl text-pink-500 animate-ping">3</span>
+                <span class="text-sm font-bold text-amber-300 mt-4 tracking-widest">準備乾杯！</span>
+            </div>
+
+            <!-- 酒杯外框容器 -->
+            <div class="beer-glass w-48 h-64 mx-auto relative flex flex-col justify-end p-1">
+                <!-- 啤酒液體動態 -->
+                <div id="beer-liquid" class="beer-liquid">
+                    <!-- 頂部泡沫 -->
+                    <div class="beer-foam"></div>
+                    <!-- 內部飄升氣泡 -->
+                    <div class="bubble w-2 h-2 left-4" style="animation-delay: 0s;"></div>
+                    <div class="bubble w-3 h-3 left-12" style="animation-delay: 0.5s;"></div>
+                    <div class="bubble w-2 h-2 left-24" style="animation-delay: 1.2s;"></div>
+                    <div class="bubble w-4 h-4 left-36" style="animation-delay: 0.8s;"></div>
+                </div>
+
+                <!-- 酒杯玻璃光澤紋理 -->
+                <div class="absolute inset-0 pointer-events-none bg-gradient-to-tr from-transparent via-white/10 to-transparent"></div>
+            </div>
+
+            <!-- 點擊提示語 -->
+            <div id="click-hint" class="text-center mt-6 text-sm text-pink-300 font-bold tracking-widest animate-bounce">
+                🔥 點擊酒杯 開始乾杯！ 🔥
+            </div>
+        </div>
+
+    </main>
+
+    <!-- 底部功能控制區 -->
+    <footer class="w-full max-w-md p-4 z-10 flex space-x-3">
+        <button onclick="openLeaderboardModal()" class="flex-1 py-3 bg-purple-900/60 hover:bg-purple-800/80 text-purple-200 border border-purple-500/40 rounded-xl font-bold text-sm tracking-wider flex items-center justify-center space-x-2 transition-all active:scale-95 glass-card">
+            <i class="fa-solid fa-trophy text-amber-400"></i>
+            <span>雲端排行榜</span>
+        </button>
+        <button id="reset-btn" onclick="resetGame()" class="py-3 px-5 bg-gray-800/60 hover:bg-gray-700/80 text-gray-300 border border-gray-600/40 rounded-xl font-bold text-sm transition-all active:scale-95 glass-card">
+            <i class="fa-solid fa-rotate-right"></i>
+        </button>
+    </footer>
+
+    <!-- ------------------ MODALS (彈窗系統) ------------------ -->
+
+    <!-- 1. 極限模式輸入暱稱 Modal -->
+    <div id="nickname-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
+        <div class="glass-card w-full max-w-sm rounded-2xl p-6 border border-pink-500/40 neon-border-pink relative flex flex-col items-center">
+            <div class="w-14 h-14 bg-pink-500/20 rounded-full flex items-center justify-center mb-4 text-pink-500 text-2xl border border-pink-500/40">
+                <i class="fa-solid fa-fire-flame-curated"></i>
+            </div>
+            <h2 class="text-xl font-bold text-white tracking-wider mb-2">準備進入極限賽</h2>
+            <p class="text-xs text-gray-300 text-center mb-6 leading-relaxed">
+                15 秒內挑戰連點極限！成績將同步至雲端排行榜。<br>
+                <span class="text-amber-400 font-bold">製作人最高紀錄：197 次</span>
             </p>
             
-            <input type="text" id="nickname-input" maxlength="10" placeholder="神秘酒客" 
-                   class="w-full px-4 py-3 rounded-xl bg-black/50 border border-purple-500/50 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-pink-500 text-center mb-5 font-bold tracking-wider">
+            <input type="text" id="player-nickname" placeholder="請輸入您的大名 / 暱稱" maxlength="12" class="w-full px-4 py-3 bg-gray-900/90 border border-purple-500/50 rounded-xl text-white text-center focus:outline-none focus:border-pink-500 mb-6 font-bold tracking-wider">
 
-            <div class="flex gap-2">
-                <button onclick="closeModal('modal-extreme-input')" class="w-1/3 py-3 rounded-xl glass-card text-xs text-slate-400 font-bold">
+            <div class="flex space-x-3 w-full">
+                <button onclick="closeNicknameModal()" class="flex-1 py-3 bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold rounded-xl text-sm transition-all">
                     取消
                 </button>
-                <button onclick="confirmExtremeGame()" class="w-2/3 py-3 rounded-xl bg-gradient-to-r from-purple-600 via-fuchsia-500 to-pink-500 text-white font-bold text-xs tracking-wider shadow-lg">
+                <button onclick="confirmStartExtreme()" class="flex-1 py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-bold rounded-xl text-sm shadow-lg hover:brightness-110 transition-all">
                     開始挑戰！
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- 彈窗 3：排行榜 Modal -->
-    <div id="modal-leaderboard" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-        <div class="glass-card-purple w-full max-w-xs rounded-3xl p-6 text-left">
-            <div class="flex items-center justify-center gap-2 mb-4">
-                <svg class="w-6 h-6 text-amber-400 drop-shadow-[0_0_8px_rgba(245,158,11,0.6)]" fill="currentColor" viewBox="0 0 24 24"><path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0011 15.9V18H9v2h6v-2h-2v-2.1c1.95-.37 3.46-1.88 3.82-3.81C19.23 11.72 21 9.69 21 7V5c0-1.1-.9-2-2-2z"/></svg>
-                <h3 class="font-game text-2xl text-purple-300 purple-glow-text">極限排行榜</h3>
-            </div>
-            
-            <!-- 排行榜動態名單 -->
-            <div id="leaderboard-list" class="space-y-2.5 my-4 max-h-64 overflow-y-auto pr-1">
-                <!-- 由 JavaScript 自動更新與填入 -->
+    <!-- 2. 結算獎牌 Modal -->
+    <div id="result-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4">
+        <div class="glass-card w-full max-w-sm rounded-2xl p-6 border border-amber-500/40 neon-border-purple relative flex flex-col items-center text-center">
+            <div class="text-5xl mb-3 animate-bounce" id="result-icon">🍺</div>
+            <h2 class="text-2xl font-black text-amber-300 neon-text-yellow mb-1 tracking-wider" id="result-title">酒豪誕生！</h2>
+            <p class="text-xs text-gray-300 mb-4" id="result-subtitle">15秒極限挑戰結束</p>
+
+            <!-- 得分看板 -->
+            <div class="w-full py-4 my-2 bg-gray-900/80 rounded-xl border border-white/10 flex flex-col items-center">
+                <span class="text-xs text-gray-400 mb-1">最終 Shot 數</span>
+                <span id="final-score" class="pixel-font text-4xl text-pink-500 neon-text-pink">0</span>
             </div>
 
-            <button onclick="closeModal('modal-leaderboard')" class="mt-4 w-full py-3 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-500 text-white font-bold text-xs tracking-wider shadow-lg">
-                關閉
-            </button>
+            <!-- 評語 -->
+            <p id="result-comment" class="text-sm text-purple-200 font-bold my-3 px-2">「千杯不醉！酒吧的傳奇人物就是你！」</p>
+
+            <!-- 按鈕 -->
+            <div class="flex space-x-3 w-full mt-4">
+                <button onclick="closeResultModal()" class="flex-1 py-3 bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold rounded-xl text-sm">
+                    關閉
+                </button>
+                <button onclick="restartExtremeGame()" class="flex-1 py-3 bg-gradient-to-r from-amber-500 to-pink-600 text-white font-bold rounded-xl text-sm shadow-lg">
+                    再喝一杯！
+                </button>
+            </div>
         </div>
     </div>
 
+    <!-- 3. 雲端排行榜 Modal -->
+    <div id="leaderboard-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
+        <div class="glass-card w-full max-w-md rounded-2xl p-6 border border-purple-500/40 flex flex-col h-[75vh]">
+            <!-- 標頭 -->
+            <div class="flex justify-between items-center mb-4 pb-3 border-b border-white/10">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-trophy text-amber-400 text-xl"></i>
+                    <h3 class="text-lg font-bold text-white tracking-wider">極限雲端排行榜</h3>
+                </div>
+                <button onclick="closeLeaderboardModal()" class="text-gray-400 hover:text-white text-lg px-2">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- 排行榜清單 -->
+            <div id="leaderboard-list" class="flex-1 overflow-y-auto space-y-2 pr-1">
+                <div class="text-center py-10 text-gray-400 text-sm">
+                    <i class="fa-solid fa-spinner animate-spin text-2xl text-pink-500 mb-2"></i><br>
+                    雲端酒豪資料載入中...
+                </div>
+            </div>
+
+            <!-- 底部按鈕 -->
+            <div class="mt-4 pt-3 border-t border-white/10 flex justify-between items-center text-xs text-gray-400">
+                <span>即時連線至 Firebase 雲端資料庫</span>
+                <button onclick="loadLeaderboardData()" class="text-pink-400 hover:text-pink-300 font-bold">
+                    <i class="fa-solid fa-rotate mr-1"></i>重新整理
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ------------------ JS 邏輯腳本 ------------------ -->
     <script>
-        // 1. 自訂圖片網址變數 (填入 URL 可替代預設 SVG 啤酒，留 null 則使用高質感 SVG)
-        const BEER_IMAGE_URL = null; 
+        // 遊戲狀態變數
+        let currentMode = 'casual'; // 'casual' | 'extreme'
+        let clicks = 0;
+        let isPlaying = false;
+        let timerInterval = null;
+        let remainingSeconds = 15;
+        let playerName = "神秘酒客";
 
-        // 2. 遊戲狀態控制變數
-        let gameMode = 'normal'; // 'normal', 'hard', 'extreme'
-        let targetClicks = 150;
-        let remainingClicks = 150;
-        let extremeScore = 0;
-        let timeLeft = 15;
-        let gameTimer = null;
-        let isGameActive = false;
-        let playerNickname = "神秘酒客";
-
-        // 3. 排行榜 LocalStorage 資料 (預設含製作人麻糬 197分)
-        let leaderboard = JSON.parse(localStorage.getItem('shot_game_leaderboard')) || [
-            { name: "麻糬 (製作人)", score: 197 },
-            { name: "酒吧酒霸", score: 184 },
-            { name: "千杯不醉", score: 168 },
-            { name: "微醺夜貓", score: 142 }
-        ];
-
-        // 4. DOM 元素選取
-        const viewCover = document.getElementById('view-cover');
-        const viewGame = document.getElementById('view-game');
-        const readyOverlay = document.getElementById('ready-overlay');
-        const readyText = document.getElementById('ready-text');
-        const timerDisplay = document.getElementById('timer-display');
-        const clicksDisplay = document.getElementById('clicks-display');
+        // DOM 元素引用
+        const drinkArea = document.getElementById('drink-area');
         const beerLiquid = document.getElementById('beer-liquid');
-        const beerFoam = document.getElementById('beer-foam');
-        const gameControls = document.getElementById('game-controls');
-        const resultControls = document.getElementById('result-controls');
-        const resultMessage = document.getElementById('result-message');
-        const resultButtons = document.getElementById('result-buttons');
+        const clickCountEl = document.getElementById('click-count');
+        const timerDisplayEl = document.getElementById('timer-display');
+        const readyOverlay = document.getElementById('ready-overlay');
+        const readyCountdownEl = document.getElementById('ready-countdown');
+        const clickHintEl = document.getElementById('click-hint');
 
-        // 初始化檢查是否載入自繪圖片
-        if (BEER_IMAGE_URL) {
-            document.getElementById('cover-beer-graphic').innerHTML = `<img src="${BEER_IMAGE_URL}" class="w-full h-full object-contain">`;
-            document.getElementById('game-beer-graphic').innerHTML = `<img src="${BEER_IMAGE_URL}" class="w-full h-full object-contain">`;
+        // 切換模式
+        function switchMode(mode) {
+            if (isPlaying) return;
+            currentMode = mode;
+
+            const casualBtn = document.getElementById('mode-casual-btn');
+            const extremeBtn = document.getElementById('mode-extreme-btn');
+
+            if (mode === 'casual') {
+                casualBtn.className = "flex-1 py-2 text-xs font-bold rounded-lg transition-all duration-300 bg-gradient-to-r from-pink-600 to-purple-600 text-white shadow-lg";
+                extremeBtn.className = "flex-1 py-2 text-xs font-bold text-gray-400 hover:text-white rounded-lg transition-all duration-300";
+                clickHintEl.innerText = "🔥 點擊酒杯 開始乾杯！ 🔥";
+            } else {
+                extremeBtn.className = "flex-1 py-2 text-xs font-bold rounded-lg transition-all duration-300 bg-gradient-to-r from-pink-600 to-purple-600 text-white shadow-lg";
+                casualBtn.className = "flex-1 py-2 text-xs font-bold text-gray-400 hover:text-white rounded-lg transition-all duration-300";
+                clickHintEl.innerText = "⚡ 點擊酒杯 觸發極限挑戰 ⚡";
+            }
+            resetGame();
         }
 
-        // 開啟極限模式暱稱輸入框
-        function openExtremeModal() {
-            document.getElementById('nickname-input').value = '';
-            openModal('modal-extreme-input');
+        // 點擊酒杯事件
+        function handleShotClick(e) {
+            // 觸發視覺效果
+            createPopText(e);
+            createRipple(e);
+
+            if (currentMode === 'casual') {
+                clicks++;
+                updateUI();
+                decreaseLiquidTemp();
+            } else if (currentMode === 'extreme') {
+                if (!isPlaying) {
+                    // 極限模式：第一次點擊開啟暱稱彈窗
+                    openNicknameModal();
+                } else {
+                    clicks++;
+                    updateUI();
+                    decreaseLiquidTemp();
+                }
+            }
         }
 
-        // 確認極限模式暱稱並開始遊戲
-        function confirmExtremeGame() {
-            const inputVal = document.getElementById('nickname-input').value.trim();
-            playerNickname = inputVal || "神秘酒客";
-            closeModal('modal-extreme-input');
-            prepareGame('extreme');
+        // 浮動點擊數字特效
+        function createPopText(e) {
+            const rect = drinkArea.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            const pop = document.createElement('div');
+            pop.className = 'click-pop pixel-font';
+            pop.innerText = '+1';
+            pop.style.left = `${x}px`;
+            pop.style.top = `${y}px`;
+
+            drinkArea.appendChild(pop);
+            setTimeout(() => pop.remove(), 600);
         }
 
-        // 進入遊戲 Ready 倒數階段
-        function prepareGame(mode) {
-            gameMode = mode;
+        // 波紋特效
+        function createRipple(e) {
+            const rect = drinkArea.getBoundingClientRect();
+            const circle = document.createElement('div');
+            const diameter = Math.max(rect.width, rect.height);
+            const radius = diameter / 2;
 
-            // 切換 View
-            viewCover.classList.add('hidden');
-            viewGame.classList.remove('hidden');
-            viewGame.classList.add('flex');
+            circle.style.width = circle.style.height = `${diameter}px`;
+            circle.style.left = `${e.clientX - rect.left - radius}px`;
+            circle.style.top = `${e.clientY - rect.top - radius}px`;
+            circle.classList.add('ripple');
 
-            resetGameData();
+            drinkArea.appendChild(circle);
+            setTimeout(() => circle.remove(), 500);
+        }
+
+        // 動態水位變化 (模擬喝飲料)
+        function decreaseLiquidTemp() {
+            let currentHeight = parseFloat(beerLiquid.style.height || "100");
+            currentHeight -= 8;
+            if (currentHeight < 15) currentHeight = 100; // 喝完自動補滿
+            beerLiquid.style.height = `${currentHeight}%`;
+        }
+
+        // 更新介面數字
+        function updateUI() {
+            clickCountEl.innerText = clicks;
+        }
+
+        // 重置遊戲狀態
+        function resetGame() {
+            clearInterval(timerInterval);
+            isPlaying = false;
+            clicks = 0;
+            remainingSeconds = 15;
+            updateUI();
+            beerLiquid.style.height = "100%";
+            timerDisplayEl.innerText = currentMode === 'casual' ? "--" : "15";
+            readyOverlay.classList.add('hidden');
+        }
+
+        // --- 極限模式流程 ---
+
+        function openNicknameModal() {
+            document.getElementById('nickname-modal').classList.remove('hidden');
+        }
+
+        function closeNicknameModal() {
+            document.getElementById('nickname-modal').classList.add('hidden');
+        }
+
+        function confirmStartExtreme() {
+            const inputName = document.getElementById('player-nickname').value.trim();
+            playerName = inputName || "神秘酒客";
+            closeNicknameModal();
             startReadyCountdown();
         }
 
-        // 重置當前模式數據
-        function resetGameData() {
-            clearInterval(gameTimer);
-            isGameActive = false;
-            timeLeft = 15;
-            timerDisplay.innerText = "15";
-
-            gameControls.classList.remove('hidden');
-            gameControls.classList.add('flex');
-            resultControls.classList.add('hidden');
-            resultControls.classList.remove('flex');
-
-            if (gameMode === 'normal') {
-                targetClicks = 150;
-                remainingClicks = 150;
-                clicksDisplay.innerText = "150/150";
-            } else if (gameMode === 'hard') {
-                targetClicks = 200;
-                remainingClicks = 200;
-                clicksDisplay.innerText = "200/200";
-            } else if (gameMode === 'extreme') {
-                extremeScore = 0;
-                clicksDisplay.innerText = "0 口Shot";
-            }
-
-            updateBeerLevel(100);
-        }
-
-        // Ready? -> 2 -> 1 -> GO! 視覺倒數
+        // 倒數 Ready (3, 2, 1)
         function startReadyCountdown() {
             readyOverlay.classList.remove('hidden');
-            readyOverlay.classList.add('flex');
+            let readyCount = 3;
+            readyCountdownEl.innerText = readyCount;
 
-            let count = 2;
-            readyText.innerText = "Ready?";
-
-            const readyInterval = setInterval(() => {
-                if (count > 0) {
-                    readyText.innerText = count;
-                    count--;
-                } else if (count === 0) {
-                    readyText.innerText = "GO!";
-                    count--;
+            const readyTimer = setInterval(() => {
+                readyCount--;
+                if (readyCount > 0) {
+                    readyCountdownEl.innerText = readyCount;
                 } else {
-                    clearInterval(readyInterval);
+                    clearInterval(readyTimer);
                     readyOverlay.classList.add('hidden');
-                    readyOverlay.classList.remove('flex');
-                    startGameTimer();
+                    startExtremeGame();
                 }
-            }, 650);
+            }, 800);
         }
 
-        // 開啟 15 秒遊戲計時
-        function startGameTimer() {
-            isGameActive = true;
-            gameTimer = setInterval(() => {
-                timeLeft--;
-                timerDisplay.innerText = timeLeft;
+        // 正式開始 15 秒極限賽
+        function startExtremeGame() {
+            isPlaying = true;
+            clicks = 0;
+            remainingSeconds = 15;
+            updateUI();
+            timerDisplayEl.innerText = remainingSeconds;
 
-                if (timeLeft <= 0) {
-                    clearInterval(gameTimer);
-                    endGame();
+            const startTime = Date.now();
+            const duration = 15000; // 15秒
+
+            timerInterval = setInterval(() => {
+                const elapsed = Date.now() - startTime;
+                const left = Math.ceil((duration - elapsed) / 1000);
+
+                if (left >= 0) {
+                    timerDisplayEl.innerText = left;
                 }
-            }, 1000);
+
+                if (elapsed >= duration) {
+                    clearInterval(timerInterval);
+                    finishExtremeGame();
+                }
+            }, 100);
         }
 
-        // 連擊啤酒處理 logic
-        function handleBeerClick() {
-            if (!isGameActive) return;
+        // 極限賽結束結算
+        async function finishExtremeGame() {
+            isPlaying = false;
+            timerDisplayEl.innerText = "0";
 
-            if (gameMode === 'normal' || gameMode === 'hard') {
-                if (remainingClicks > 0) {
-                    remainingClicks--;
-                    clicksDisplay.innerText = `${remainingClicks}/${targetClicks}`;
+            // 顯示結果 Modal
+            document.getElementById('final-score').innerText = clicks;
+            
+            // 評價系統
+            const titleEl = document.getElementById('result-title');
+            const commentEl = document.getElementById('result-comment');
+            const iconEl = document.getElementById('result-icon');
 
-                    // 計算當前剩餘點擊數百分比並更新酒量水位
-                    const percent = (remainingClicks / targetClicks) * 100;
-                    updateBeerLevel(percent);
-
-                    if (remainingClicks === 0) {
-                        clearInterval(gameTimer);
-                        endGame(true); // 提前挑戰成功
-                    }
-                }
-            } else if (gameMode === 'extreme') {
-                extremeScore++;
-                clicksDisplay.innerText = `${extremeScore} 口Shot`;
-            }
-        }
-
-        // 動態水位變化 (依據剩餘 % 數)
-        function updateBeerLevel(percent) {
-            if (BEER_IMAGE_URL || !beerLiquid) return;
-
-            if (percent <= 0) {
-                beerLiquid.setAttribute('h', '0');
-                beerFoam.setAttribute('h', '0');
-            } else if (percent <= 20) {
-                beerLiquid.setAttribute('h', '15');
-                beerLiquid.setAttribute('y', '97');
-                beerFoam.setAttribute('y', '85');
-            } else if (percent <= 40) {
-                beerLiquid.setAttribute('h', '30');
-                beerLiquid.setAttribute('y', '82');
-                beerFoam.setAttribute('y', '70');
-            } else if (percent <= 60) {
-                beerLiquid.setAttribute('h', '45');
-                beerLiquid.setAttribute('y', '67');
-                beerFoam.setAttribute('y', '55');
-            } else if (percent <= 80) {
-                beerLiquid.setAttribute('h', '60');
-                beerLiquid.setAttribute('y', '52');
-                beerFoam.setAttribute('y', '40');
+            if (clicks >= 150) {
+                iconEl.innerText = "🏆";
+                titleEl.innerText = "神級酒豪！";
+                commentEl.innerText = "「無人能及的手速！今晚整間酒吧都為你喝采！」";
+            } else if (clicks >= 100) {
+                iconEl.innerText = "🔥";
+                titleEl.innerText = "酒吧狂歡者！";
+                commentEl.innerText = "「太強了！你已經超越了 90% 的酒客！」";
             } else {
-                beerLiquid.setAttribute('h', '72');
-                beerLiquid.setAttribute('y', '40');
-                beerFoam.setAttribute('y', '28');
-                beerFoam.setAttribute('h', '14');
+                iconEl.innerText = "🍺";
+                titleEl.innerText = "微醺挑戰者！";
+                commentEl.innerText = "「表現不錯！再接再厲，準備下一次乾杯！」";
+            }
+
+            document.getElementById('result-modal').classList.remove('hidden');
+
+            // 寫入 Firebase 雲端資料庫
+            if (window.saveScoreToCloud) {
+                await window.saveScoreToCloud(playerName, clicks);
             }
         }
 
-        // 遊戲結束與結算 logic
-        function endGame(earlySuccess = false) {
-            isGameActive = false;
-            gameControls.classList.add('hidden');
-            resultControls.classList.remove('hidden');
-            resultControls.classList.add('flex');
-
-            if (gameMode === 'normal') {
-                if (remainingClicks === 0 || earlySuccess) {
-                    resultMessage.innerText = "🎉 挑戰成功！";
-                    resultButtons.innerHTML = `
-                        <button onclick="prepareGame('hard')" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-400 text-slate-950 font-bold text-sm tracking-wider shadow-lg">
-                            挑戰困難模式
-                        </button>
-                    `;
-                } else {
-                    resultMessage.innerText = "💥 挑戰失敗！";
-                    resultButtons.innerHTML = `
-                        <button onclick="goCover()" class="w-1/2 py-3 rounded-xl glass-card text-xs text-slate-400 font-bold">不玩了</button>
-                        <button onclick="prepareGame('normal')" class="w-1/2 py-3 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs">再來一次</button>
-                    `;
-                }
-            } else if (gameMode === 'hard') {
-                if (remainingClicks === 0 || earlySuccess) {
-                    resultMessage.innerText = "🏆 真正的酒豪！挑戰成功！";
-                    resultButtons.innerHTML = `
-                        <button onclick="goCover()" class="w-full py-3.5 rounded-2xl bg-amber-500 text-slate-950 font-bold text-sm tracking-wider">
-                            返回首頁
-                        </button>
-                    `;
-                } else {
-                    resultMessage.innerText = "💥 挑戰失敗！";
-                    resultButtons.innerHTML = `
-                        <button onclick="goCover()" class="w-1/2 py-3 rounded-xl glass-card text-xs text-slate-400 font-bold">不玩了</button>
-                        <button onclick="prepareGame('hard')" class="w-1/2 py-3 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs">再來一次</button>
-                    `;
-                }
-            } else if (gameMode === 'extreme') {
-                resultMessage.innerText = "Time’s up";
-                resultButtons.innerHTML = `
-                    <button onclick="finishExtremeAndShowLeaderboard()" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-500 text-white font-bold text-sm tracking-wider shadow-lg">
-                        查看排行榜
-                    </button>
-                `;
-
-                // 寫入極限模式成績至 LocalStorage
-                leaderboard.push({ name: playerNickname, score: extremeScore });
-                leaderboard.sort((a, b) => b.score - a.score);
-                leaderboard = leaderboard.slice(0, 10); // 保存前 10 名
-                localStorage.setItem('shot_game_leaderboard', JSON.stringify(leaderboard));
-            }
+        function closeResultModal() {
+            document.getElementById('result-modal').classList.add('hidden');
+            resetGame();
         }
 
-        // 極限模式結束後回封面並自動打開排行榜
-        function finishExtremeAndShowLeaderboard() {
-            goCover();
-            openModal('modal-leaderboard');
-        }
-
-        // 排行榜渲染：金(1st)、銀(2nd)、銅(3rd)、紫(4th+)
-        function renderLeaderboard() {
-            const listEl = document.getElementById('leaderboard-list');
-            listEl.innerHTML = '';
-
-            leaderboard.forEach((item, index) => {
-                const rank = index + 1;
-                let rankStyle = "text-purple-300 border-purple-500/30"; // 4名以後紫色
-                let rankBadge = `${rank}`;
-
-                if (rank === 1) {
-                    rankStyle = "text-amber-400 border-amber-500/60 font-black gold-glow-text"; // 1 金色
-                } else if (rank === 2) {
-                    rankStyle = "text-slate-200 border-slate-400/50 font-bold"; // 2 銀色
-                } else if (rank === 3) {
-                    rankStyle = "text-amber-600 border-amber-700/50 font-bold"; // 3 銅色
-                }
-
-                const row = document.createElement('div');
-                row.className = `flex items-center justify-between p-3 rounded-2xl glass-card border ${rankStyle} text-xs tracking-wider`;
-                row.innerHTML = `
-                    <div class="flex items-center gap-3">
-                        <span class="w-5 text-center font-mono text-sm font-bold">${rankBadge}</span>
-                        <span class="font-medium">${item.name}</span>
-                    </div>
-                    <span class="font-mono text-sm font-black">${item.score} <span class="text-[10px] font-normal opacity-80">Shot</span></span>
-                `;
-                listEl.appendChild(row);
-            });
-        }
-
-        // 回到封面頁
-        function goCover() {
-            viewGame.classList.add('hidden');
-            viewGame.classList.remove('flex');
-            viewCover.classList.remove('hidden');
-        }
-
-        function terminateGame() {
-            clearInterval(gameTimer);
-            goCover();
-        }
-
-        function restartCurrentGame() {
-            clearInterval(gameTimer);
-            resetGameData();
+        function restartExtremeGame() {
+            closeResultModal();
             startReadyCountdown();
         }
 
-        // 彈窗 Modal 開啟與關閉
-        function openModal(modalId) {
-            if (modalId === 'modal-leaderboard') renderLeaderboard();
-            document.getElementById(modalId).classList.remove('hidden');
+        // --- 排行榜 Modal 系統 ---
+
+        function openLeaderboardModal() {
+            document.getElementById('leaderboard-modal').classList.remove('hidden');
+            loadLeaderboardData();
         }
 
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.add('hidden');
+        function closeLeaderboardModal() {
+            document.getElementById('leaderboard-modal').classList.add('hidden');
+        }
+
+        // 讀取並渲染雲端排行榜
+        async function loadLeaderboardData() {
+            const listEl = document.getElementById('leaderboard-list');
+            listEl.innerHTML = `
+                <div class="text-center py-10 text-gray-400 text-sm">
+                    <i class="fa-solid fa-spinner animate-spin text-2xl text-pink-500 mb-2"></i><br>
+                    即時連線 Firebase 資料庫中...
+                </div>
+            `;
+
+            if (window.fetchCloudLeaderboard) {
+                const data = await window.fetchCloudLeaderboard();
+                if (data && data.length > 0) {
+                    listEl.innerHTML = "";
+                    data.forEach((item, index) => {
+                        let rankBadge = `<span class="w-6 text-center font-bold text-gray-400">${index + 1}</span>`;
+                        let rankBg = "bg-gray-900/50 border-white/5";
+
+                        if (index === 0) {
+                            rankBadge = `<i class="fa-solid fa-crown text-amber-400 text-lg w-6 text-center"></i>`;
+                            rankBg = "bg-amber-500/10 border-amber-500/30";
+                        } else if (index === 1) {
+                            rankBadge = `<i class="fa-solid fa-medal text-slate-300 text-lg w-6 text-center"></i>`;
+                            rankBg = "bg-slate-500/10 border-slate-500/30";
+                        } else if (index === 2) {
+                            rankBadge = `<i class="fa-solid fa-award text-amber-700 text-lg w-6 text-center"></i>`;
+                            rankBg = "bg-amber-900/10 border-amber-800/30";
+                        }
+
+                        const row = document.createElement('div');
+                        row.className = `flex justify-between items-center p-3 rounded-xl border ${rankBg}`;
+                        row.innerHTML = `
+                            <div class="flex items-center space-x-3">
+                                ${rankBadge}
+                                <span class="text-sm font-bold text-gray-200">${escapeHtml(item.name)}</span>
+                            </div>
+                            <div class="pixel-font text-pink-400 font-extrabold text-sm">
+                                ${item.score} <span class="text-xs text-gray-400 font-normal">SHOTS</span>
+                            </div>
+                        `;
+                        listEl.appendChild(row);
+                    });
+                } else {
+                    listEl.innerHTML = `<div class="text-center py-10 text-gray-400 text-sm">尚無挑戰紀錄，快成為第一個酒豪！</div>`;
+                }
+            } else {
+                listEl.innerHTML = `<div class="text-center py-10 text-red-400 text-sm">雲端資料庫連線失敗</div>`;
+            }
+        }
+
+        // XSS 防護安全轉換
+        function escapeHtml(str) {
+            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
         }
     </script>
 </body>
