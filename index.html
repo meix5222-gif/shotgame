@@ -66,8 +66,10 @@
     <style>
         /* 防晃動、防手勢縮放與滑動 */
         html, body {
+            margin: 0;
+            padding: 0;
             width: 100%;
-            height: 100%;
+            height: 100dvh;
             position: fixed;
             top: 0;
             left: 0;
@@ -80,7 +82,7 @@
         body {
             font-family: 'Noto Sans TC', sans-serif;
             background-color: #050608;
-            color: #f3f4f6;
+            color: #7f7f89;
             touch-action: manipulation;
             user-select: none;
             -webkit-user-select: none;
@@ -97,10 +99,10 @@
 
         /* 霓虹燈光陰影特效 */
         .neon-text-pink {
-            text-shadow: 0 0 5px #ff007f, 0 0 15px #ff007f, 0 0 30px #ff007f;
+            text-shadow: 0 0 3px #a6135d, 0 0 5px #a6135d, 0 0 10px #a6135d;
         }
         .neon-text-yellow {
-            text-shadow: 0 0 5px #ffd700, 0 0 15px #ffd700, 0 0 25px #ffd700;
+            text-shadow: 0 0 3px #a38b05, 0 0 5px #ae9403, 0 0 10px #b09705;
         }
 
         /* 玻璃擬態樣式 */
@@ -162,12 +164,12 @@
         .click-pop {
             position: absolute;
             color: #ffd700;
-            font-weight: 900;
+            font-weight: 450;
             font-size: 2rem;
             pointer-events: none;
             animation: popAndFade 0.5s forwards ease-out;
-            text-shadow: 0 0 10px #ff007f;
-            z-index: 60;
+            text-shadow: 0 0 5px #875870;
+            z-index: 30;
         }
 
         @keyframes popAndFade {
@@ -180,7 +182,7 @@
         .ripple {
             position: absolute;
             border-radius: 50%;
-            background: rgba(255, 0, 127, 0.4);
+            background: rgba(100, 52, 76, 0.2);
             transform: scale(0);
             animation: rippleEffect 0.4s linear;
             pointer-events: none;
@@ -188,7 +190,7 @@
         }
 
         @keyframes rippleEffect {
-            to { transform: scale(4); opacity: 0; }
+            to { transform: scale(1.5); opacity: 0; }
         }
 
         /* 自訂滾動條 */
@@ -264,8 +266,8 @@
                 <span id="timer-display" class="pixel-font text-3xl font-bold text-amber-400 neon-text-yellow mt-1">15</span>
             </div>
             <div class="flex flex-col items-end">
-                <span id="clicks-label" class="text-xs text-gray-400 font-bold">剩餘連點</span>
-                <span id="clicks-display" class="pixel-font text-3xl font-extrabold text-pink-500 neon-text-pink mt-1">150</span>
+                <span id="clicks-label" class="text-xs text-gray-400 font-bold">剩餘杯數</span>
+                <span id="clicks-display" class="pixel-font text-3xl font-extrabold text-pink-500 neon-text-pink mt-1">90</span>
             </div>
         </div>
 
@@ -291,7 +293,7 @@
 
             <!-- 全螢幕連點提示語 -->
             <div id="tap-hint" class="text-center mt-4 text-xs text-pink-300 font-bold tracking-widest animate-bounce pointer-events-none">
-                ⚡ 連點中間區域，一乾而盡！ ⚡
+                ⚡點擊中間區域一乾而盡！⚡
             </div>
         </div>
 
@@ -331,11 +333,11 @@
                 </button>
             </div>
             <div class="space-y-3 text-xs text-gray-200 leading-relaxed font-medium">
-                <p>1. 普通模式：15秒內點擊螢幕120下即挑戰成功。</p>
-                <p>2. 困難模式：15秒內點擊螢幕150下即挑戰成功。</p>
+                <p>1. 普通模式：15秒內點擊螢幕90下即挑戰成功。</p>
+                <p>2. 困難模式：15秒內點擊螢幕120下即挑戰成功。</p>
                 <p>3. 極限模式：挑戰15秒內最多點擊數。</p>
                 <p>4. 排行榜僅會記錄極限模式分數。</p>
-                <p>5. 小遊戲僅供娛樂用。</p>
+                <p>5. 測試版小遊戲僅供娛樂用。</p>
             </div>
             <button onclick="closeModal('info-modal')" class="mt-6 w-full py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold rounded-xl text-xs cursor-pointer">
                 關閉
@@ -351,7 +353,7 @@
             </div>
             <h3 class="text-lg font-bold text-white mb-2">準備進入極限賽</h3>
             <p class="text-xs text-gray-300 text-center mb-4 leading-relaxed">
-                輸入您的暱稱，挑戰極限
+                輸入您的暱稱，挑戰極限!
             </p>
             
             <input type="text" id="player-nickname" placeholder="請輸入暱稱" maxlength="12" class="w-full px-4 py-3 bg-gray-900/90 border border-purple-500/50 rounded-xl text-white text-center focus:outline-none focus:border-pink-500 mb-6 font-bold tracking-wider text-sm">
@@ -401,7 +403,7 @@
     <script>
         // 遊戲狀態變數
         let currentMode = ''; // 'normal' | 'hard' | 'extreme'
-        let targetClicks = 150;
+        let targetClicks = 90; // 普通模式的目標點擊次數
         let clicks = 0; // 普通/困難代表「剩餘次數」，極限代表「累計點數」
         let isPlaying = false;
         let isReadying = false;
@@ -439,8 +441,8 @@
                 return;
             }
 
-            if (mode === 'normal') targetClicks = 120;
-            if (mode === 'hard') targetClicks = 150;
+            if (mode === 'normal') targetClicks = 90;
+            if (mode === 'hard') targetClicks = 120;
 
             initGameUI();
             startReadyCountdown();
@@ -563,9 +565,9 @@
             if (currentMode === 'extreme') return;
 
             // 根據剩餘點擊次數切換水位
-            if (clicks > 120) beerLiquid.style.height = "100%";
-            else if (clicks > 90) beerLiquid.style.height = "80%";
-            else if (clicks > 60) beerLiquid.style.height = "60%";
+            if (clicks > 90) beerLiquid.style.height = "100%";
+            else if (clicks > 80) beerLiquid.style.height = "80%";
+            else if (clicks > 50) beerLiquid.style.height = "60%";
             else if (clicks > 30) beerLiquid.style.height = "40%";
             else if (clicks > 0) beerLiquid.style.height = "20%";
             else beerLiquid.style.height = "0%";
@@ -594,6 +596,8 @@
                 if (isSuccess) {
                     // 挑戰成功
                     statusOverlayText.innerText = "挑戰成功！";
+                    statusOverlayText.style.fontFamily = "'Microsoft JhengHei', sans-serif";
+                    statusOverlayText.style.fontWeight = "bold";
                     statusOverlay.classList.remove('hidden');
 
                     setTimeout(() => {
@@ -610,6 +614,8 @@
                 } else {
                     // 挑戰失敗
                     statusOverlayText.innerText = "挑戰失敗！";
+                    statusOverlayText.style.fontFamily = "'Microsoft JhengHei', sans-serif";
+                    statusOverlayText.style.fontWeight = "bold";
                     statusOverlay.classList.remove('hidden');
 
                     btnLeft.innerText = "不玩了";
